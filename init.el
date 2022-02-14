@@ -1,191 +1,474 @@
-;;; init.el -*- lexical-binding: t; -*-
+;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
+;;       in Emacs and init.el will be generated automatically!
 
-;; This file controls what Doom modules are enabled and what order they load
-;; in. Remember to run 'doom sync' after modifying it!
+;; Set system font
+(defvar efs/default-font-size 180)
+(defvar efs/default-variable-font-size 180)
 
-;; NOTE Press 'SPC h d h' (or 'C-h d h' for non-vim users) to access Doom's
-;;      documentation. There you'll find a "Module Index" link where you'll find
-;;      a comprehensive list of Doom's modules and what flags they support.
+;; Initialize package sources
+(require 'package)
 
-;; NOTE Move your cursor over a module's name (or its flags) and press 'K' (or
-;;      'C-c c k' for non-vim users) to view its documentation. This works on
-;;      flags as well (those symbols that start with a plus).
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+
+  ;; Initialize use-package on non-Linux platforms
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+;; Fuck you ugly emacs logo
+(setq inhibit-startup-message t)
+(scroll-bar-mode -1)        ; Disable visible scrollbar
+(tool-bar-mode -1)          ; Disable the toolbar
+(tooltip-mode -1)           ; Disable tooltips
+(set-fringe-mode 10)        ; Give some breathing room
+(menu-bar-mode -1)            ; Disable the menu bar
+
+;; Enable annoying bell
+;; (setq visible-bell t)
+
+;; Line number stuff
+(column-number-mode)
+(global-display-line-numbers-mode t)
+
+;; Disable line numbers for some modes
+(dolist (mode '(org-mode-hook
+                term-mode-hook
+                shell-mode-hook
+	              treemacs-mode-hook
+                eshell-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+
+  ;; Use visual line motions even outside of visual-line-mode buffers
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
+
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init))
+
+;; Displays options for partially inserted commands. Nice when learning
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config
+  (setq which-key-idle-delay 1))
+
+
+;; Enable ivy
+(use-package ivy
+  :diminish
+  :bind (("C-s" . swiper)
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
+  :config
+  (ivy-mode 1))
+
+(use-package counsel
+  :bind (("C-M-j" . 'counsel-switch-buffer)
+         :map minibuffer-local-map
+         ("C-r" . 'counsel-minibuffer-history))
+  :config
+  (counsel-mode 1))
+
+;;(use-package hydra)
+
+;;(defhydra hydra-text-scale (:timeout 4)
+;;  "scale text"
+;;  ("j" text-scale-increase "in")
+;;  ("k" text-scale-decrease "out")
+;;  ("f" nil "finished" :exit t))
+
+;;(rune/leader-keys
+;;  "ts" '(hydra-text-scale/body :which-key "scale text"))
+
+;; Org mode stuff!!!
+;;(defun efs/org-font-setup ()
+;;  ;; Replace list hyphen with dot
+;;  (font-lock-add-keywords 'org-mode
+;;                          '(("^ *\\([-]\\) "
+;;                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
 ;;
-;;      Alternatively, press 'gd' (or 'C-c c d') on a module to browse its
-;;      directory (for easy access to its source code).
+;;  ;; Set faces for heading levels
+;;  (dolist (face '((org-level-1 . 1.2)
+;;                  (org-level-2 . 1.1)
+;;                  (org-level-3 . 1.05)
+;;                  (org-level-4 . 1.0)
+;;                  (org-level-5 . 1.1)
+;;                  (org-level-6 . 1.1)
+;;                  (org-level-7 . 1.1)
+;;                  (org-level-8 . 1.1)))
+;;    (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+;;
+;;  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+;;  (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
+;;  (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
+;;  (set-face-attribute 'org-table nil   :inherit '(shadow fixed-pitch))
+;;  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+;;  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+;;  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+;;  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch))
+;;
+;;(defun efs/org-mode-setup ()
+;;  (org-indent-mode)
+;;  (variable-pitch-mode 1)
+;;  (visual-line-mode 1))
+;;
+;;(use-package org
+;;  :hook (org-mode . efs/org-mode-setup)
+;;  :config
+;;  (setq org-ellipsis " ▾")
+;;
+;;  (setq org-agenda-start-with-log-mode t)
+;;  (setq org-log-done 'time)
+;;  (setq org-log-into-drawer t)
+;;
+;;  (setq org-agenda-files
+;;        '("~/Projects/Code/emacs-from-scratch/OrgFiles/Tasks.org"
+;;          "~/Projects/Code/emacs-from-scratch/OrgFiles/Habits.org"
+;;          "~/Projects/Code/emacs-from-scratch/OrgFiles/Birthdays.org"))
+;;
+;;  (require 'org-habit)
+;;  (add-to-list 'org-modules 'org-habit)
+;;  (setq org-habit-graph-column 60)
+;;
+;;  (setq org-todo-keywords
+;;    '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+;;      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+;;
+;;  (setq org-refile-targets
+;;    '(("Archive.org" :maxlevel . 1)
+;;      ("Tasks.org" :maxlevel . 1)))
+;;
+;;  ;; Save Org buffers after refiling!
+;;  (advice-add 'org-refile :after 'org-save-all-org-buffers)
+;;
+;;  (setq org-tag-alist
+;;    '((:startgroup)
+;;       ; Put mutually exclusive tags here
+;;       (:endgroup)
+;;       ("@errand" . ?E)
+;;       ("@home" . ?H)
+;;       ("@work" . ?W)
+;;       ("agenda" . ?a)
+;;       ("planning" . ?p)
+;;       ("publish" . ?P)
+;;       ("batch" . ?b)
+;;       ("note" . ?n)
+;;       ("idea" . ?i)))
+;;
+;;  ;; Configure custom agenda views
+;;  (setq org-agenda-custom-commands
+;;   '(("d" "Dashboard"
+;;     ((agenda "" ((org-deadline-warning-days 7)))
+;;      (todo "NEXT"
+;;        ((org-agenda-overriding-header "Next Tasks")))
+;;      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+;;
+;;    ("n" "Next Tasks"
+;;     ((todo "NEXT"
+;;        ((org-agenda-overriding-header "Next Tasks")))))
+;;
+;;    ("W" "Work Tasks" tags-todo "+work-email")
+;;
+;;    ;; Low-effort next actions
+;;    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+;;     ((org-agenda-overriding-header "Low Effort Tasks")
+;;      (org-agenda-max-todos 20)
+;;      (org-agenda-files org-agenda-files)))
+;;
+;;    ("w" "Workflow Status"
+;;     ((todo "WAIT"
+;;            ((org-agenda-overriding-header "Waiting on External")
+;;             (org-agenda-files org-agenda-files)))
+;;      (todo "REVIEW"
+;;            ((org-agenda-overriding-header "In Review")
+;;             (org-agenda-files org-agenda-files)))
+;;      (todo "PLAN"
+;;            ((org-agenda-overriding-header "In Planning")
+;;             (org-agenda-todo-list-sublevels nil)
+;;             (org-agenda-files org-agenda-files)))
+;;      (todo "BACKLOG"
+;;            ((org-agenda-overriding-header "Project Backlog")
+;;             (org-agenda-todo-list-sublevels nil)
+;;             (org-agenda-files org-agenda-files)))
+;;      (todo "READY"
+;;            ((org-agenda-overriding-header "Ready for Work")
+;;             (org-agenda-files org-agenda-files)))
+;;      (todo "ACTIVE"
+;;            ((org-agenda-overriding-header "Active Projects")
+;;             (org-agenda-files org-agenda-files)))
+;;      (todo "COMPLETED"
+;;            ((org-agenda-overriding-header "Completed Projects")
+;;             (org-agenda-files org-agenda-files)))
+;;      (todo "CANC"
+;;            ((org-agenda-overriding-header "Cancelled Projects")
+;;             (org-agenda-files org-agenda-files)))))))
+;;
+;;  (setq org-capture-templates
+;;    `(("t" "Tasks / Projects")
+;;      ("tt" "Task" entry (file+olp "~/Projects/Code/emacs-from-scratch/OrgFiles/Tasks.org" "Inbox")
+;;           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+;;
+;;      ("j" "Journal Entries")
+;;      ("jj" "Journal" entry
+;;           (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+;;           "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+;;           ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
+;;           :clock-in :clock-resume
+;;           :empty-lines 1)
+;;      ("jm" "Meeting" entry
+;;           (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+;;           "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+;;           :clock-in :clock-resume
+;;           :empty-lines 1)
+;;
+;;      ("w" "Workflows")
+;;      ("we" "Checking Email" entry (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+;;           "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
+;;
+;;      ("m" "Metrics Capture")
+;;      ("mw" "Weight" table-line (file+headline "~/Projects/Code/emacs-from-scratch/OrgFiles/Metrics.org" "Weight")
+;;       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
+;;
+;;  (define-key global-map (kbd "C-c j")
+;;    (lambda () (interactive) (org-capture nil "jj")))
+;;
+;;  (efs/org-font-setup))
+;;
+;;(use-package org-bullets
+;;  :after org
+;;  :hook (org-mode . org-bullets-mode)
+;;  :custom
+;;  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
+;;
+;;(defun efs/org-mode-visual-fill ()
+;;  (setq visual-fill-column-width 100
+;;        visual-fill-column-center-text t)
+;;  (visual-fill-column-mode 1))
+;;
+;;(use-package visual-fill-column
+;;  :hook (org-mode . efs/org-mode-visual-fill))
+;;
+;;(org-babel-do-load-languages
+;;  'org-babel-load-languages
+;;  '((emacs-lisp . t)
+;;    (python . t)))
+;;
+;;(push '("conf-unix" . conf-unix) org-src-lang-modes)
+;;
+;;;; This is needed as of Org 9.2
+;;(require 'org-tempo)
+;;
+;;(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+;;(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+;;(add-to-list 'org-structure-template-alist '("py" . "src python"))
+;;
+;;;; Automatically tangle our Emacs.org config file when we save it
+;;(defun efs/org-babel-tangle-config ()
+;;  (when (string-equal (buffer-file-name)
+;;                      (expand-file-name "~/Projects/Code/emacs-from-scratch/Emacs.org"))
+;;    ;; Dynamic scoping to the rescue
+;;    (let ((org-confirm-babel-evaluate nil))
+;;      (org-babel-tangle))))
+;;
+;;(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+;;
+;;(defun efs/lsp-mode-setup ()
+;;  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+;;  (lsp-headerline-breadcrumb-mode))
 
-(doom! :input
-       ;;chinese
-       ;;japanese
-       ;;layout            ; auie,ctsrnm is the superior home row
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . efs/lsp-mode-setup)
+  :init
+  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  :config
+  (lsp-enable-which-key-integration t))
 
-       :completion
-       company           ; the ultimate code completion backend
-       ;;helm              ; the *other* search engine for love and life
-       ;;ido               ; the other *other* search engine...
-       ;;ivy               ; a search engine for love and life
-       vertico           ; the search engine of the future
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
 
-       :ui
-       ;;deft              ; notational velocity for Emacs
-       doom              ; what makes DOOM look the way it does
-       doom-dashboard    ; a nifty splash screen for Emacs
-       doom-quit         ; DOOM quit-message prompts when you quit Emacs
-       ;;(emoji +unicode)  ; 🙂
-       hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
-       ;;hydra
-       ;;indent-guides     ; highlighted indent columns
-       ;;ligatures         ; ligatures and symbols to make your code pretty again
-       ;;minimap           ; show a map of the code on the side
-       modeline          ; snazzy, Atom-inspired modeline, plus API
-       ;;nav-flash         ; blink cursor line after big motions
-       ;;neotree           ; a project drawer, like NERDTree for vim
-       ophints           ; highlight the region an operation acts on
-       (popup +defaults)   ; tame sudden yet inevitable temporary windows
-       ;;tabs              ; a tab bar for Emacs
-       treemacs          ; a project drawer, like neotree but cooler
-       ;;unicode           ; extended unicode support for various languages
-       vc-gutter         ; vcs diff in the fringe
-       vi-tilde-fringe   ; fringe tildes to mark beyond EOB
-       ;;window-select     ; visually switch windows
-       workspaces        ; tab emulation, persistence & separate workspaces
-       ;;zen               ; distraction-free coding or writing
+(use-package lsp-treemacs
+  :after lsp)
 
-       :editor
-       (evil +everywhere); come to the dark side, we have cookies
-       file-templates    ; auto-snippets for empty files
-       fold              ; (nigh) universal code folding
-       ;;(format +onsave)  ; automated prettiness
-       ;;god               ; run Emacs commands without modifier keys
-       ;;lispy             ; vim for lisp, for people who don't like vim
-       ;;multiple-cursors  ; editing in many places at once
-       ;;objed             ; text object editing for the innocent
-       ;;parinfer          ; turn lisp into python, sort of
-       ;;rotate-text       ; cycle region at point between text candidates
-       snippets          ; my elves. They type so I don't have to
-       ;;word-wrap         ; soft wrapping with language-aware indent
+(use-package lsp-ivy)
 
-       :emacs
-       dired             ; making dired pretty [functional]
-       electric          ; smarter, keyword-based electric-indent
-       ;;ibuffer         ; interactive buffer management
-       undo              ; persistent, smarter undo for your inevitable mistakes
-       vc                ; version-control and Emacs, sitting in a tree
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
 
-       :term
-       ;;eshell            ; the elisp shell that works everywhere
-       ;;shell             ; simple shell REPL for Emacs
-       ;;term              ; basic terminal emulator for Emacs
-       vterm             ; the best terminal emulation in Emacs
+(use-package company-box
+  :hook (company-mode . company-box-mode))
 
-       :checkers
-       syntax              ; tasing you for every semicolon you forget
-       ;;(spell +flyspell) ; tasing you for misspelling mispelling
-       ;;grammar           ; tasing grammar mistake every you make
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "~/github")
+    (setq projectile-project-search-path '("~/github")))
+  (setq projectile-switch-project-action #'projectile-dired))
 
-       :tools
-       ;;ansible
-       ;;biblio            ; Writes a PhD for you (citation needed)
-       ;;debugger          ; FIXME stepping through code, to help you add bugs
-       ;;direnv
-       ;;docker
-       ;;editorconfig      ; let someone else argue about tabs vs spaces
-       ;;ein               ; tame Jupyter notebooks with emacs
-       (eval +overlay)     ; run code, run (also, repls)
-       ;;gist              ; interacting with github gists
-       lookup              ; navigate your code and its documentation
-       lsp               ; M-x vscode
-       magit             ; a git porcelain for Emacs
-       ;;make              ; run make tasks from Emacs
-       ;;pass              ; password manager for nerds
-       pdf               ; pdf enhancements
-       ;;prodigy           ; FIXME managing external services & code builders
-       ;;rgb               ; creating color strings
-       ;;taskrunner        ; taskrunner for all your projects
-       ;;terraform         ; infrastructure as code
-       ;;tmux              ; an API for interacting with tmux
-       ;;upload            ; map local to remote projects via ssh/ftp
+(use-package counsel-projectile
+  :config (counsel-projectile-mode))
 
-       :os
-       (:if IS-MAC macos)  ; improve compatibility with macOS
-       ;;tty               ; improve the terminal Emacs experience
+(use-package magit
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-       :lang
-       ;;agda              ; types of types of types of types...
-       ;;beancount         ; mind the GAAP
-       ;;cc                ; C > C++ == 1
-       ;;clojure           ; java with a lisp
-       ;;common-lisp       ; if you've seen one lisp, you've seen them all
-       ;;coq               ; proofs-as-programs
-       ;;crystal           ; ruby at the speed of c
-       ;;csharp            ; unity, .NET, and mono shenanigans
-       ;;data              ; config/data formats
-       ;;(dart +flutter)   ; paint ui and not much else
-       ;;dhall
-       ;;elixir            ; erlang done right
-       ;;elm               ; care for a cup of TEA?
-       emacs-lisp        ; drown in parentheses
-       ;;erlang            ; an elegant language for a more civilized age
-       ;;ess               ; emacs speaks statistics
-       ;;factor
-       ;;faust             ; dsp, but you get to keep your soul
-       ;;fortran           ; in FORTRAN, GOD is REAL (unless declared INTEGER)
-       ;;fsharp            ; ML stands for Microsoft's Language
-       ;;fstar             ; (dependent) types and (monadic) effects and Z3
-       ;;gdscript          ; the language you waited for
-       ;;(go +lsp)         ; the hipster dialect
-       (haskell +lsp)    ; a language that's lazier than I am
-       ;;hy                ; readability of scheme w/ speed of python
-       ;;idris             ; a language you can depend on
-       ;;json              ; At least it ain't XML
-       ;;(java +lsp)       ; the poster child for carpal tunnel syndrome
-       ;;javascript        ; all(hope(abandon(ye(who(enter(here))))))
-       ;;julia             ; a better, faster MATLAB
-       ;;kotlin            ; a better, slicker Java(Script)
-       ;;latex             ; writing papers in Emacs has never been so fun
-       ;;lean              ; for folks with too much to prove
-       ;;ledger            ; be audit you can be
-       ;;lua               ; one-based indices? one-based indices
-       markdown          ; writing docs for people to ignore
-       ;;nim               ; python + lisp at the speed of c
-       ;;nix               ; I hereby declare "nix geht mehr!"
-       ;;ocaml             ; an objective camel
-       org               ; organize your plain life in plain text
-       ;;php               ; perl's insecure younger brother
-       ;;plantuml          ; diagrams for confusing people more
-       ;;purescript        ; javascript, but functional
-       ;;python            ; beautiful is better than ugly
-       ;;qt                ; the 'cutest' gui framework ever
-       ;;racket            ; a DSL for DSLs
-       ;;raku              ; the artist formerly known as perl6
-       ;;rest              ; Emacs as a REST client
-       ;;rst               ; ReST in peace
-       ;;(ruby +rails)     ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-       ;;rust              ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
-       ;;scala             ; java, but good
-       ;;(scheme +guile)   ; a fully conniving family of lisps
-       sh                ; she sells {ba,z,fi}sh shells on the C xor
-       ;;sml
-       ;;solidity          ; do you need a blockchain? No.
-       ;;swift             ; who asked for emoji variables?
-       ;;terra             ; Earth and Moon in alignment for performance.
-       ;;web               ; the tubes
-       ;;yaml              ; JSON, but readable
-       ;;zig               ; C, but simpler
+;; NOTE: Make sure to configure a GitHub token before using this package!
+;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
+;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
+(use-package forge)
 
-       :email
-       ;;(mu4e +org +gmail)
-       ;;notmuch
-       ;;(wanderlust +gmail)
+(use-package evil-nerd-commenter
+  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
-       :app
-       ;;calendar
-       ;;emms
-       ;;everywhere        ; *leave* Emacs!? You must be joking
-       ;;irc               ; how neckbeards socialize
-       ;;(rss +org)        ; emacs as an RSS reader
-       ;;twitter           ; twitter client https://twitter.com/vnought
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
 
-       :config
-       ;;literate
-       (default +bindings +smartparens))
+(use-package vterm
+  :commands vterm
+  :config
+  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")  ;; Set this to match your custom shell prompt
+  (setq vterm-shell "zsh")                       ;; Set this to customize the shell to launch
+  (setq vterm-max-scrollback 10000))
+
+(when (eq system-type 'windows-nt)
+  (setq explicit-shell-file-name "powershell.exe")
+  (setq explicit-powershell.exe-args '()))
+
+;;(defun efs/configure-eshell ()
+;;  ;; Save command history when commands are entered
+;;  (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+;;
+;;  ;; Truncate buffer for performance
+;;  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+;;
+;;  ;; Bind some useful keys for evil-mode
+;;  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
+;;  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+;;  (evil-normalize-keymaps)
+;;
+;;  (setq eshell-history-size         10000
+;;        eshell-buffer-maximum-lines 10000
+;;        eshell-hist-ignoredups t
+;;        eshell-scroll-to-bottom-on-input t))
+;;
+;;(use-package eshell-git-prompt)
+;;
+;;(use-package eshell
+;;  :hook (eshell-first-time-mode . efs/configure-eshell)
+;;  :config
+;;
+;;  (with-eval-after-load 'esh-opt
+;;    (setq eshell-destroy-buffer-when-process-dies t)
+;;    (setq eshell-visual-commands '("htop" "zsh" "vim")))
+;;
+;;  (eshell-git-prompt-use-theme 'powerline))
+
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-agho --group-directories-first"))
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "l" 'dired-single-buffer))
+
+(use-package dired-single)
+
+;;(use-package all-the-icons-dired
+;;  :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-open
+  :config
+  ;; Doesn't work as expected!
+  ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
+
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode)
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "H" 'dired-hide-dotfiles-mode))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(dired-hide-dotfiles dired-open dired-single vterm rainbow-delimiters evil-nerd-commenter forge evil-magit magit counsel-projectile projectile company-box company lsp-ivy lsp-treemacs lsp-ui lsp-mode counsel ivy which-key evil-collection evil use-package)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+;; Load cyberpunk theme
+(load-theme 'cyberpunk t)
+
+(global-set-key (kbd "C-c o") 'vterm)
+(global-set-key (kbd "<f1>") (lambda ()
+			       (interactive)
+			       (counsel-find-file "~/.notes")))
+(global-set-key (kbd "<f2>") (lambda ()
+			       (interactive)
+			       (counsel-find-file "~/.todo")))
+(global-set-key (kbd "<f3>") (lambda ()
+			       (interactive)
+			       (counsel-find-file "~/.guides/emacs-keys.org")))
+
+;; Put autosave files in /tmp.
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+(require 'org)
