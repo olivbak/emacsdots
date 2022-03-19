@@ -251,6 +251,9 @@
 (setq user-mail-address "oliverbkp@gmail.com") 
 (setq user-full-name "Oliver Bak")
 
+
+(require 'gnus)
+
 ;setup gmail nnimap
 (setq gnus-select-method
       '(nnimap "gmail"
@@ -274,3 +277,5 @@
 
 ; Always show [Gmail]/Alle ; even when no unread mails
 (setq gnus-permanently-visible-groups ".*\\[Gmail\\]/Alle.*")
+
+(add-to-list 'gnus-secondary-select-methods '(nntp "news.gwene.org"))
