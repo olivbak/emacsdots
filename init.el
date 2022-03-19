@@ -241,3 +241,36 @@
 
 ;; Yeeu
 (defalias 'yes-or-no-p 'y-or-n-p)
+
+;; Remove backup-files in working directory
+(add-to-list 'backup-directory-alist
+             (cons ".*" "~/backup"))
+
+
+;email stuff
+(setq user-mail-address "oliverbkp@gmail.com") 
+(setq user-full-name "Oliver Bak")
+
+;setup gmail nnimap
+(setq gnus-select-method
+      '(nnimap "gmail"
+       (nnimap-address "imap.gmail.com")
+       (nnimap-server-port 993)
+       (nnimap-stream ssl)))
+
+; Sort emails as i like em'
+(setq gnus-thread-sort-functions
+      '(gnus-thread-sort-by-number
+      (not gnus-thread-sort-by-date)))
+
+
+
+(setq gnus-parameters
+ '((".*" (large-newsgroup-initial . 20))))
+
+; Send email via Gmail:
+(setq message-send-mail-function 'smtpmail-send-it
+      smtpmail-default-smtp-server "smtp.gmail.com")
+
+; Always show [Gmail]/Alle ; even when no unread mails
+(setq gnus-permanently-visible-groups ".*\\[Gmail\\]/Alle.*")
