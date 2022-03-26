@@ -100,20 +100,6 @@
 		   (counsel-mode 1))
 
 
-(use-package company
-	      :after lsp-mode
-	       :hook (lsp-mode . company-mode)
-		:bind (:map company-active-map
-			("<tab>" . company-complete-selection))
-		      (:map lsp-mode-map
-			("<tab>" . company-indent-or-complete-common))
-			:custom
-			 (company-minimum-prefix-length 1)
-			  (company-idle-delay 0.0))
-
-(use-package company-box
-	      :hook (company-mode . company-box-mode))
-
 (use-package projectile
 	       :diminish projectile-mode
 	         :config (projectile-mode)
@@ -188,9 +174,9 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("7153b82e50b6f7452b4519097f880d968a6eaf6f6ef38cc45a144958e553fbc6" "b89a4f5916c29a235d0600ad5a0849b1c50fab16c2c518e1d98f0412367e7f97" "ab729ed3a8826bf8927b16be7767aa449598950f45ddce7e4638c0960a96e0f1" "660376e0336bb04fae2dcf73ab6a1fe946ccea82b25f6800d51977e3a16de1b9" "16ab866312f1bd47d1304b303145f339eac46bbc8d655c9bfa423b957aa23cc9" "c9ddf33b383e74dac7690255dd2c3dfa1961a8e8a1d20e401c6572febef61045" "7575474658c34b905bcec30a725653b2138c2f2d3deef0587e3abfae08c5b276" "8acf4d93c90712b00317b68fb2c25b9b2c4b6af5e4bed09d52b390f9e86b2059" default))
+   '("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "18cd5a0173772cdaee5522b79c444acbc85f9a06055ec54bb91491173bc90aaa" "bf798e9e8ff00d4bf2512597f36e5a135ce48e477ce88a0764cfb5d8104e8163" "7153b82e50b6f7452b4519097f880d968a6eaf6f6ef38cc45a144958e553fbc6" "b89a4f5916c29a235d0600ad5a0849b1c50fab16c2c518e1d98f0412367e7f97" "ab729ed3a8826bf8927b16be7767aa449598950f45ddce7e4638c0960a96e0f1" "660376e0336bb04fae2dcf73ab6a1fe946ccea82b25f6800d51977e3a16de1b9" "16ab866312f1bd47d1304b303145f339eac46bbc8d655c9bfa423b957aa23cc9" "c9ddf33b383e74dac7690255dd2c3dfa1961a8e8a1d20e401c6572febef61045" "7575474658c34b905bcec30a725653b2138c2f2d3deef0587e3abfae08c5b276" "8acf4d93c90712b00317b68fb2c25b9b2c4b6af5e4bed09d52b390f9e86b2059" default))
  '(package-selected-packages
-   '(nix-haskell-mode haskell-mode pdf-tools latex-preview-pane auctex evil-mu4e alect-themes darkmine-theme dark-mint-theme badwolf-theme darkburn-theme vs-dark-theme ample-theme twilight-theme dired-hide-dotfiles dired-open dired-single vterm rainbow-delimiters evil-nerd-commenter forge evil-magit magit counsel-projectile projectile company-box company lsp-ivy lsp-treemacs lsp-ui lsp-mode counsel ivy which-key evil-collection evil use-package))
+   '(lsp-haskell flycheck direnv plan9-theme haskell-mode pdf-tools latex-preview-pane auctex evil-mu4e alect-themes darkmine-theme dark-mint-theme badwolf-theme darkburn-theme vs-dark-theme ample-theme twilight-theme dired-hide-dotfiles dired-open dired-single vterm rainbow-delimiters evil-nerd-commenter forge evil-magit magit counsel-projectile projectile company-box company lsp-ivy lsp-treemacs lsp-ui lsp-mode counsel ivy which-key evil-collection evil use-package))
  '(warning-suppress-types '((comp) (comp) (comp) (comp) (comp) (comp) (comp) (comp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -237,7 +223,16 @@
 (setq TeX-view-program-selection '((output-pdf "PDF Tools"))) ;; use pdf-tools for viewing
 (setq LaTeX-command "latex --synctex=1") ;; optional: enable synctex
 
-(use-package haskell-mode)
+
+;;(package-install 'flycheck)
+;;(global-flycheck-mode)
+
+(require 'haskell-mode)
+(use-package cc-mode)
+
+;;(require 'haskell-interactive-mode)
+;;(require 'haskell-process)
+;;(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 
 ;; Yeeu
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -267,7 +262,6 @@
       (not gnus-thread-sort-by-date)))
 
 
-
 (setq gnus-parameters
  '((".*" (large-newsgroup-initial . 20))))
 
@@ -279,3 +273,25 @@
 (setq gnus-permanently-visible-groups ".*\\[Gmail\\]/Alle.*")
 
 (add-to-list 'gnus-secondary-select-methods '(nntp "news.gwene.org"))
+
+(require 'lsp-mode)
+(add-hook 'haskell-mode-hook #'lsp)
+(add-hook 'haskell-literate-mode-hook #'lsp)
+
+(use-package direnv
+  :init
+  (add-hook 'prog-mode-hook #'direnv-update-environment)
+  :config
+  (direnv-mode))
+
+
+(setq lsp-ui-doc-enable nil)
+
+(setq lsp-lens-enable nil)
+(setq lsp-headerline-breadcrumb-enable nil)
+(setq lsp-ui-sideline-enable nil)
+(setq lsp-modeline-code-actions-enable nil)
+(setq lsp-ui-sideline-enable nil)
+(setq lsp-modeline-diagnostics-enable nil)
+(setq lsp-completion-provider :none)
+(setq lsp-diagnostics-provider :none)
