@@ -36,8 +36,7 @@
 (global-display-line-numbers-mode t)
 
 ;; Disable line numbers for some modes
-(dolist (mode '(org-mode-hook
-		 term-mode-hook
+(dolist (mode '(term-mode-hook
 		  shell-mode-hook
 		   vterm-mode-hook
 		    treemacs-mode-hook
@@ -174,10 +173,20 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "18cd5a0173772cdaee5522b79c444acbc85f9a06055ec54bb91491173bc90aaa" "bf798e9e8ff00d4bf2512597f36e5a135ce48e477ce88a0764cfb5d8104e8163" "7153b82e50b6f7452b4519097f880d968a6eaf6f6ef38cc45a144958e553fbc6" "b89a4f5916c29a235d0600ad5a0849b1c50fab16c2c518e1d98f0412367e7f97" "ab729ed3a8826bf8927b16be7767aa449598950f45ddce7e4638c0960a96e0f1" "660376e0336bb04fae2dcf73ab6a1fe946ccea82b25f6800d51977e3a16de1b9" "16ab866312f1bd47d1304b303145f339eac46bbc8d655c9bfa423b957aa23cc9" "c9ddf33b383e74dac7690255dd2c3dfa1961a8e8a1d20e401c6572febef61045" "7575474658c34b905bcec30a725653b2138c2f2d3deef0587e3abfae08c5b276" "8acf4d93c90712b00317b68fb2c25b9b2c4b6af5e4bed09d52b390f9e86b2059" default))
+   '("36ca8f60565af20ef4f30783aa16a26d96c02df7b4e54e9900a5138fb33808da" "04dd0236a367865e591927a3810f178e8d33c372ad5bfef48b5ce90d4b476481" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "18cd5a0173772cdaee5522b79c444acbc85f9a06055ec54bb91491173bc90aaa" "bf798e9e8ff00d4bf2512597f36e5a135ce48e477ce88a0764cfb5d8104e8163" "7153b82e50b6f7452b4519097f880d968a6eaf6f6ef38cc45a144958e553fbc6" "b89a4f5916c29a235d0600ad5a0849b1c50fab16c2c518e1d98f0412367e7f97" "ab729ed3a8826bf8927b16be7767aa449598950f45ddce7e4638c0960a96e0f1" "660376e0336bb04fae2dcf73ab6a1fe946ccea82b25f6800d51977e3a16de1b9" "16ab866312f1bd47d1304b303145f339eac46bbc8d655c9bfa423b957aa23cc9" "c9ddf33b383e74dac7690255dd2c3dfa1961a8e8a1d20e401c6572febef61045" "7575474658c34b905bcec30a725653b2138c2f2d3deef0587e3abfae08c5b276" "8acf4d93c90712b00317b68fb2c25b9b2c4b6af5e4bed09d52b390f9e86b2059" default))
  '(package-selected-packages
-   '(lsp-haskell flycheck direnv plan9-theme haskell-mode pdf-tools latex-preview-pane auctex evil-mu4e alect-themes darkmine-theme dark-mint-theme badwolf-theme darkburn-theme vs-dark-theme ample-theme twilight-theme dired-hide-dotfiles dired-open dired-single vterm rainbow-delimiters evil-nerd-commenter forge evil-magit magit counsel-projectile projectile company-box company lsp-ivy lsp-treemacs lsp-ui lsp-mode counsel ivy which-key evil-collection evil use-package))
- '(warning-suppress-types '((comp) (comp) (comp) (comp) (comp) (comp) (comp) (comp))))
+   '(elixir-mode lsp-pyright ispc-mode lsp-haskell flycheck direnv plan9-theme haskell-mode pdf-tools latex-preview-pane auctex evil-mu4e alect-themes darkmine-theme dark-mint-theme badwolf-theme darkburn-theme vs-dark-theme ample-theme twilight-theme dired-hide-dotfiles dired-open dired-single vterm rainbow-delimiters evil-nerd-commenter forge evil-magit magit counsel-projectile projectile company-box company lsp-ivy lsp-treemacs lsp-ui lsp-mode counsel ivy which-key evil-collection evil use-package))
+ '(warning-suppress-types
+   '((direnv)
+     (direnv)
+     (comp)
+     (comp)
+     (comp)
+     (comp)
+     (comp)
+     (comp)
+     (comp)
+     (comp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -186,9 +195,9 @@
  )
 
 
-(load-file "~/.emacs.d/themes/ample-dark.el")
-;; Load cyberpunk theme
-(load-theme 'sanityinc-tomorrow-bright t)
+;; Load theme
+(load-theme 'plan9 t)
+;;(load-theme 'sanityinc-tomorrow-night t)
 
 
 (global-set-key (kbd "C-c o") 'vterm)
@@ -208,27 +217,51 @@
 (setq auto-save-file-name-transforms
         `((".*" ,temporary-file-directory t)))
 
+;; Holy org mode
 (require 'org)
 
+;; Font size and color
 (set-face-attribute 'default nil :height 130)
-(set-background-color "black")
 
 
+;; Setup Tex/Auctex and a proper pdf-viewer
 (use-package tex
   :ensure auctex)
 
-(use-package pdf-tools)
+
+;; lstlisting in latex org export
+ (require 'ox-latex)
+ (setq org-latex-listings t)
+
 
 (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer) ;; revert pdf after compile
 (setq TeX-view-program-selection '((output-pdf "PDF Tools"))) ;; use pdf-tools for viewing
 (setq LaTeX-command "latex --synctex=1") ;; optional: enable synctex
+(use-package pdf-tools)
 
-
-;;(package-install 'flycheck)
-;;(global-flycheck-mode)
-
+;; Haskell mode
 (require 'haskell-mode)
+;; C mode
 (use-package cc-mode)
+;; elixir mode
+(use-package elixir-mode
+  :ensure t
+  :init  
+  (add-hook 'elixir-mode-hook
+            (lambda ()
+              (push '(">=" . ?\u2265) prettify-symbols-alist)
+              (push '("<=" . ?\u2264) prettify-symbols-alist)
+              (push '("!=" . ?\u2260) prettify-symbols-alist)
+              (push '("==" . ?\u2A75) prettify-symbols-alist)
+              (push '("=~" . ?\u2245) prettify-symbols-alist)
+              (push '("<-" . ?\u2190) prettify-symbols-alist)
+              (push '("->" . ?\u2192) prettify-symbols-alist)
+              (push '("<-" . ?\u2190) prettify-symbols-alist)
+              (push '("|>" . ?\u25B7) prettify-symbols-alist))))
+
+;; elm mode
+(require 'elm-mode)
+
 
 ;;(require 'haskell-interactive-mode)
 ;;(require 'haskell-process)
@@ -242,14 +275,14 @@
              (cons ".*" "~/backup"))
 
 
-;email stuff
+;Email credentials
 (setq user-mail-address "oliverbkp@gmail.com") 
 (setq user-full-name "Oliver Bak")
 
 
 (require 'gnus)
 
-;setup gmail nnimap
+;Setup gmail nnimap
 (setq gnus-select-method
       '(nnimap "gmail"
        (nnimap-address "imap.gmail.com")
@@ -277,7 +310,14 @@
 (require 'lsp-mode)
 (add-hook 'haskell-mode-hook #'lsp)
 (add-hook 'haskell-literate-mode-hook #'lsp)
+; (add-hook 'lsp-mode-hook #'lsp)
 
+
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
 (use-package direnv
   :init
   (add-hook 'prog-mode-hook #'direnv-update-environment)
@@ -285,13 +325,19 @@
   (direnv-mode))
 
 
-(setq lsp-ui-doc-enable nil)
-
+;(setq lsp-ui-doc-enable nil)
 (setq lsp-lens-enable nil)
 (setq lsp-headerline-breadcrumb-enable nil)
-(setq lsp-ui-sideline-enable nil)
-(setq lsp-modeline-code-actions-enable nil)
-(setq lsp-ui-sideline-enable nil)
-(setq lsp-modeline-diagnostics-enable nil)
+;(setq lsp-ui-sideline-enable nil)
+;(setq lsp-modeline-code-actions-enable nil)
+;(setq lsp-modeline-diagnostics-enable nil)
 (setq lsp-completion-provider :none)
-(setq lsp-diagnostics-provider :none)
+;(setq lsp-diagnostics-provider :none)
+
+
+;Line wrap on org mode
+(setq org-startup-truncated nil)
+
+(require 'openwith)
+(openwith-mode t)
+(setq openwith-associations '(("\\.pdf\\'" "zathura" (file))))
