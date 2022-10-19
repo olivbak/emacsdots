@@ -341,3 +341,33 @@
 (require 'openwith)
 (openwith-mode t)
 (setq openwith-associations '(("\\.pdf\\'" "zathura" (file))))
+
+
+(setq org-agenda-files (list "~/org/schedule.org"))
+
+(require 'posframe)
+(require 'ivy-posframe)
+(require 'which-key-posframe)
+(require 'dired-posframe)
+(ivy-posframe-mode 1)
+(dired-posframe-mode 1)
+(which-key-posframe-mode 1)
+(setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display)))
+
+(setq which-key-posframe-poshandler 'posframe-poshandler-window-center)
+
+(setq vterm-toggle-fullscreen-p nil)
+(add-to-list 'display-buffer-alist
+             '((lambda (buffer-or-name _)
+                   (let ((buffer (get-buffer buffer-or-name)))
+                     (with-current-buffer buffer
+                       (or (equal major-mode 'vterm-mode)
+                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                (display-buffer-reuse-window display-buffer-in-direction)
+                (direction . bottom)
+                (dedicated . t) ;dedicated is supported in emacs27
+                (reusable-frames . visible)
+                (window-height . 0.9)))
+
+(put 'dired-find-alternate-file 'disabled nil)
+
