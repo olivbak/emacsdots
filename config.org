@@ -60,6 +60,9 @@ Backup files are move to ~/backup
              (cons ".*" "~/backup"))
 #+END_SRC
 ** Replace yes/no prompt with y/n
+#+BEGIN_SRC emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
 ** Posframe
 #+BEGIN_SRC emacs-lisp
   (require 'posframe)
@@ -182,8 +185,17 @@ Dired lets you manage your Linux file system from Emacs. Includes:
       "l" 'dired-single-buffer))
 
   (use-package dired-single)
+
+  (put 'dired-find-alternate-file 'disabled nil)
 #+END_SRC
 ** Direnv
+#+BEGIN_SRC emacs-lisp
+(use-package direnv
+  :init
+  (add-hook 'prog-mode-hook #'direnv-update-environment)
+  :config
+  (direnv-mode))
+#+END_SRC
 ** Magit
 Git integration in emacs
 #+BEGIN_SRC emacs-lisp
@@ -253,14 +265,10 @@ of evil key-bindings for the most popular emacs modes, which are not covered by 
 
 
 * Programming Language Related
-** Major Modes
-*** Elixir
-*** Haskell
-*** C/C++
 ** LSP
 Language server protol setup in Emacs
 #+BEGIN_SRC emacs-lisp
-(require 'lsp-mode)
+  (require 'lsp-mode)
 #+END_SRC
 *** Settings
 #+BEGIN_SRC emacs-lisp
@@ -274,6 +282,18 @@ Language server protol setup in Emacs
 ;(setq lsp-diagnostics-provider :none)
 #+END_SRC emacs-lisp
 
+** Major Modes
+*** Elixir
+*** Haskell
+#+BEGIN_SRC emacs-lisp
+  (use-package haskell-mode)
+  (add-hook 'haskell-mode-hook #'lsp)
+  (add-hook 'haskell-literate-mode-hook #'lsp)
+#+END_SRC
+*** C/C++
+#+BEGIN_SRC emacs-lisp
+  (use-package cc-mode)
+#+END_SRC
 * Org mode
 ** General
 #+BEGIN_SRC emacs-lisp
