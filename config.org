@@ -11,7 +11,6 @@ Fetch external package managers to download packages from
 #+END_SRC
 When fetched, update and initialize package managers
 #+BEGIN_SRC emacs-lisp
-  (package-initialize)
   (unless package-archive-contents
       (package-refresh-contents))
 
@@ -65,10 +64,10 @@ Backup files are move to ~/backup
 #+END_SRC
 ** Posframe
 #+BEGIN_SRC emacs-lisp
-  (require 'posframe)
-  (require 'ivy-posframe)
-  (require 'which-key-posframe)
-  (require 'dired-posframe)
+  (use-package posframe)
+  (use-package ivy-posframe)
+  (use-package which-key-posframe)
+  (use-package dired-posframe)
   (ivy-posframe-mode 1)
   (dired-posframe-mode 1)
   (which-key-posframe-mode 1)
@@ -94,6 +93,11 @@ This remove some annoying default features in emacs, such as top bars, tooltips 
   (defvar efs/default-font-size 180)
   (defvar efs/default-variable-font-size 180)
   (set-face-attribute 'default nil :height 130)
+#+END_SRC
+
+** Sudoedit
+#+BEGIN_SRC emacs-lisp
+(use-package sudo-edit)
 #+END_SRC
 
 
@@ -180,9 +184,10 @@ Dired lets you manage your Linux file system from Emacs. Includes:
     :bind (("C-x C-j" . dired-jump))
     :custom ((dired-listing-switches "-agho --group-directories-first"))
     :config
-    (evil-collection-define-key 'normal 'dired-mode-map
-      "h" 'dired-single-up-directory
-      "l" 'dired-single-buffer))
+    ;;(evil-collection-define-key 'normal 'dired-mode-map
+    ;;  "h" 'dired-single-up-directory
+    ;;  "l" 'dired-single-buffer))
+)
 
   (use-package dired-single)
 
@@ -203,7 +208,23 @@ Git integration in emacs
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+END_SRC
+*** Forge
+Forge integrates with Magit, s.t. you can view pullrequests from GitHub
+#+BEGIN_SRC emacs-lisp
+(use-package forge
+  :after magit)
+#+END_SRC
 
+*** Authentication
+#+BEGIN_SRC emacs-lisp
+;;(ghub-request "GET" "/user" nil
+;;              :forge 'github
+;;              :host "api.github.com"
+;;              :username "tarsius"
+;;              :auth 'forge)
+;;
+;;(setq auth-sources '("~/.authinfo"))
+#+END_SRC
 
 ** Rainbow parantheses
 Nested parantheses have different colors, to easily distinguish between them.
@@ -233,8 +254,27 @@ This package requires Latex locally installed on your system
   (use-package pdf-tools)
 
   (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer) ;; revert pdf after compile
-  (setq TeX-view-program-selection '((output-pdf "PDF Tools"))) ;; use pdf-tools for viewing
+  ;; (setq TeX-view-program-selection '((output-pdf "zathura"))) ;; use pdf-tools for viewing
   (setq LaTeX-command "latex --synctex=1") ;; optional: enable synctex
+
+  ;; lstlisting in latex org export
+  ;;(use-package ox-latex)
+  ;;(setq org-latex-listings t)
+#+END_SRC
+
+* PlantUML
+#+BEGIN_SRC emacs-lisp
+   (org-babel-do-load-languages
+    'org-babel-load-languages
+    '((plantuml . t))) ; this line activates plantuml
+
+  (setq org-plantuml-jar-path
+      (expand-file-name "/home/vchg38/Downloads/plantuml-1.2023.4.jar"))
+
+  (require 'openwith)
+  (openwith-mode t)
+  (setq openwith-associations '(("\\.pdf\\'" "zathura" (file))))
+
 #+END_SRC
 
 
@@ -265,10 +305,49 @@ of evil key-bindings for the most popular emacs modes, which are not covered by 
 
 
 * Programming Language Related
+** Major Modes
+*** Elixir
+#+BEGIN_SRC emacs-lisp
+(use-package elixir-mode
+  :ensure t
+  :init  
+  (add-hook 'elixir-mode-hook
+            (lambda ()
+              (push '(">=" . ?\u2265) prettify-symbols-alist)
+              (push '("<=" . ?\u2264) prettify-symbols-alist)
+              (push '("!=" . ?\u2260) prettify-symbols-alist)
+              (push '("==" . ?\u2A75) prettify-symbols-alist)
+              (push '("=~" . ?\u2245) prettify-symbols-alist)
+              (push '("<-" . ?\u2190) prettify-symbols-alist)
+              (push '("->" . ?\u2192) prettify-symbols-alist)
+              (push '("<-" . ?\u2190) prettify-symbols-alist)
+              (push '("|>" . ?\u25B7) prettify-symbols-alist))))
+#+END_SRC
+*** Haskell
+#+BEGIN_SRC emacs-lisp
+  (use-package haskell-mode)
+#+END_SRC
+*** C/C++
+#+BEGIN_SRC emacs-lisp
+  (use-package cc-mode)
+#+END_SRC
+*** Elm
+#+BEGIN_SRC emacs-lisp
+(use-package elm-mode)
+#+END_SRC
+
 ** LSP
 Language server protol setup in Emacs
 #+BEGIN_SRC emacs-lisp
-  (require 'lsp-mode)
+  (use-package lsp-mode
+      :commands lsp
+      :ensure t
+      :diminish lsp-mode
+      :hook
+      (elixir-mode . lsp))
+
+  (add-hook 'haskell-mode-hook #'lsp)
+  (add-hook 'haskell-literate-mode-hook #'lsp)
 #+END_SRC
 *** Settings
 #+BEGIN_SRC emacs-lisp
@@ -282,18 +361,7 @@ Language server protol setup in Emacs
 ;(setq lsp-diagnostics-provider :none)
 #+END_SRC emacs-lisp
 
-** Major Modes
-*** Elixir
-*** Haskell
-#+BEGIN_SRC emacs-lisp
-  (use-package haskell-mode)
-  (add-hook 'haskell-mode-hook #'lsp)
-  (add-hook 'haskell-literate-mode-hook #'lsp)
-#+END_SRC
-*** C/C++
-#+BEGIN_SRC emacs-lisp
-  (use-package cc-mode)
-#+END_SRC
+
 * Org mode
 ** General
 #+BEGIN_SRC emacs-lisp
@@ -393,6 +461,7 @@ Maps /<F1>/ to open /find-file/ in the default roam folder, ~/.roam
 		    (interactive)
 		    (counsel-find-file "~/.roam")))
 #+END_SRC 
+
 
 * Email
 ** Credentials
