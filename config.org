@@ -30,7 +30,6 @@ This was inspired from: [stack-exchange](https://stackoverflow.com/questions/254
   (load custom-file)
 #+END_SRC
 
-
 * General
 ** Get rid of ugly emacs logo
 #+BEGIN_SRC emacs-lisp
@@ -42,7 +41,18 @@ This setting often changes, thus I will keep a list of my favorite themes for re
 - Gruvbox
 - Twilight
 #+BEGIN_SRC emacs-lisp
-  (load-theme 'twilight t)
+  (use-package doom-themes)
+  (load-theme 'doom-1337 t)
+#+END_SRC
+** Powerline
+#+BEGIN_SRC emacs-lisp
+  (use-package powerline)
+  (powerline-center-evil-theme)
+#+END_SRC
+** Ranger
+#+BEGIN_SRC emacs-lisp
+;;(use-package ranger)
+;;(ranger-override-dired-mode t)
 #+END_SRC
 ** Autosave files in /tmp
 This setting puts annoying emacs auto save files in /tmp
@@ -101,7 +111,6 @@ This remove some annoying default features in emacs, such as top bars, tooltips 
 #+BEGIN_SRC emacs-lisp
 (use-package sudo-edit)
 #+END_SRC
-
 
 * Development
 ** Line numbers
@@ -386,7 +395,6 @@ Felt cute, might delete later
   (setq vterm-max-scrollback 10000))
 #+END_SRC
 
-
 * Latex
 This package requires Latex locally installed on your system
 #+BEGIN_SRC emacs-lisp
@@ -419,32 +427,30 @@ This package requires Latex locally installed on your system
 
 #+END_SRC
 
-
 * Evil Mode
 /evil-mode/ is a VI-emulation layer for Emacs. /evil-collection/ is a collection
 of evil key-bindings for the most popular emacs modes, which are not covered by the default /evil-mode/.
 #+BEGIN_SRC emacs-lisp
- (use-package evil
-   :init
-   (setq evil-want-integration t)
-   (setq evil-want-keybinding nil)
-   (setq evil-want-C-u-scroll t)
-   (setq evil-want-C-i-jump nil)
-   :config
-   (evil-mode 1)
-   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-   ;; Use visual line motions even outside of visual-line-mode buffers
-   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-   (evil-set-initial-state 'messages-buffer-mode 'normal)
-   (evil-set-initial-state 'dashboard-mode 'normal))
+  (use-package evil
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-i-jump nil)
+    :config
+    (evil-mode 1)
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+    ;; Use visual line motions even outside of visual-line-mode buffers
+    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal))
 
- (use-package evil-collection
-   :after evil
-   :config
-   (evil-collection-init))
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
 #+END_SRC
-
 
 * Programming Language Related
 ** Major Modes
@@ -502,7 +508,6 @@ Language server protol setup in Emacs
 (setq lsp-completion-provider :none)
 ;(setq lsp-diagnostics-provider :none)
 #+END_SRC emacs-lisp
-
 
 * Org mode
 ** General
@@ -592,7 +597,7 @@ Map /<F2>/ to open /find-file/ in the default agenda folder, which is set to ~/.
   (global-set-key (kbd "<f2>")
 		  (lambda ()
 		    (interactive)
-		    (counsel-find-file "~/.agenda")))
+		    (find-file "~/.agenda")))
 #+END_SRC
 /org-agenda/ mode is used to manage todo-lists and other progress. To make
 ** Roam
@@ -601,9 +606,8 @@ Maps /<F1>/ to open /find-file/ in the default roam folder, ~/.roam
   (global-set-key (kbd "<f1>")
 		  (lambda ()
 		    (interactive)
-		    (counsel-find-file "~/.roam")))
+		    (find-file "~/.roam")))
 #+END_SRC 
-
 
 * Email
 ** Credentials
@@ -643,7 +647,6 @@ Maps /<F1>/ to open /find-file/ in the default roam folder, ~/.roam
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'gnus-secondary-select-methods '(nntp "news.gwene.org"))
 #+END_SRC
-
 
 * Keymaps
 ** Org agenda keymap
@@ -728,56 +731,4 @@ These wrappers are now put into a /org-agenda/ keymap, bound to prefix /<C-c a>/
   (global-set-key (kbd "C-c a") 'agenda-keymap)
 #+END_SRC
 
-
 * Hydras
-
-
-* Graveyard
-** Ivy
-Completion frontend for emacs. TODO: no freaking clue what this does...
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package ivy
-  ;;   :diminish
-  ;;   :bind (("C-s" . swiper)
-  ;; 	 :map ivy-minibuffer-map
-  ;; 	 ("TAB" . ivy-alt-done)
-  ;; 	 ("C-l" . ivy-alt-done)
-  ;; 	 ("C-j" . ivy-next-line)
-  ;; 	 ("C-k" . ivy-previous-line)
-  ;; 	 :map ivy-switch-buffer-map
-  ;; 	 ("C-k" . ivy-previous-line)
-  ;; 	 ("C-l" . ivy-done)
-  ;; 	 ("C-d" . ivy-switch-buffer-kill)
-  ;; 	 :map ivy-reverse-i-search-map
-  ;; 	 ("C-k" . ivy-previous-line)
-  ;; 	 ("C-d" . ivy-reverse-i-search-kill))
-  ;;   :config
-  ;;   (ivy-mode 1))
-#+END_SRC
-** Counsel
-Yet again, no idea what this does. TODO
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package counsel
-  ;;   :bind (("C-M-j" . 'counsel-switch-buffer)
-  ;; 	 :map minibuffer-local-map
-  ;; 	 ("C-r" . 'counsel-minibuffer-history))
-  ;;   :config
-  ;;   (counsel-mode 1))
-#+END_SRC
-** Projectile
-Godly /projectile/. Lets you manage projects, just press /"C-c p"/ you'll see.
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package projectile
-  ;;   :diminish projectile-mode
-  ;;   :config (projectile-mode)
-  ;;   :custom ((projectile-completion-system 'ivy))
-  ;;   :bind-keymap ("C-c p" . projectile-command-map)
-  ;;   :init
-  ;;   ;; NOTE: Set this to the folder where you keep your Git repos!
-  ;;   (when (file-directory-p "~/github")
-  ;;     (setq projectile-project-search-path '("~/github")))
-  ;;   (setq projectile-switch-project-action #'projectile-dired))
-
-  ;; (use-package counsel-projectile
-  ;;   :config (counsel-projectile-mode))
-#+END_SRC
