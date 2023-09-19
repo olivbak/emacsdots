@@ -42,7 +42,7 @@ This setting often changes, thus I will keep a list of my favorite themes for re
 - Twilight
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes)
-  (load-theme 'doom-1337 t)
+  (load-theme 'doom-badger t)
 #+END_SRC
 ** Powerline
 #+BEGIN_SRC emacs-lisp
@@ -162,6 +162,8 @@ Dired lets you manage your Linux file system from Emacs. Includes:
     :bind-keymap ("C-c p" . project-prefix-map))
 
   (use-package consult-project-extra)
+  ;; Add magit to list of project commands
+  (add-to-list 'project-switch-commands '(magit-project-status "Magit" ?m))
 #+END_SRC
 ** Vertico
 #+BEGIN_SRC emacs-lisp
@@ -344,6 +346,14 @@ Dired lets you manage your Linux file system from Emacs. Includes:
   :init
   (marginalia-mode))
 #+END_SRC
+** Embark
+#+BEGIN_SRC emacs-lisp
+  (use-package embark
+    :bind 
+    ("C-c C-o" . embark-export))
+
+  (use-package embark-collect)
+#+END_SRC
 ** Direnv
 #+BEGIN_SRC emacs-lisp
 (use-package direnv
@@ -359,6 +369,11 @@ Git integration in emacs
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+END_SRC
+To fetch tags with force (i.e. overriding existing tags), we allow to fetch with the --force flag enabled:
+#+BEGIN_SRC emacs-lisp
+(transient-append-suffix 'magit-fetch "-t"
+  '("-f" "Bypass safety checks" "--force"))
+#+END_SRC
 *** Forge
 Forge integrates with Magit, s.t. you can view pullrequests from GitHub
 #+BEGIN_SRC emacs-lisp
@@ -368,13 +383,13 @@ Forge integrates with Magit, s.t. you can view pullrequests from GitHub
 
 *** Authentication
 #+BEGIN_SRC emacs-lisp
-;;(ghub-request "GET" "/user" nil
-;;              :forge 'github
-;;              :host "api.github.com"
-;;              :username "tarsius"
-;;              :auth 'forge)
-;;
-;;(setq auth-sources '("~/.authinfo"))
+  ;;(ghub-request "GET" "/user" nil
+  ;;             :forge 'github
+  ;;             :host "api.github.com"
+  ;;             :username "tarsius"
+  ;;             :auth 'forge)
+
+  ;;(setq auth-sources '("~/.authinfo"))
 #+END_SRC
 
 ** Rainbow parantheses
@@ -393,6 +408,11 @@ Felt cute, might delete later
   (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")  ;; Set this to match your custom shell prompt
   (setq vterm-shell "zsh")                       ;; Set this to customize the shell to launch
   (setq vterm-max-scrollback 10000))
+#+END_SRC
+
+** Wgrep
+#+BEGIN_SRC emacs-lisp
+  (use-package wgrep)
 #+END_SRC
 
 * Latex
@@ -421,7 +441,7 @@ This package requires Latex locally installed on your system
   (setq org-plantuml-jar-path
       (expand-file-name "/home/vchg38/Downloads/plantuml-1.2023.4.jar"))
 
-  (use-package 'openwith
+  (use-package openwith
   :init (openwith-mode))
   (setq openwith-associations '(("\\.pdf\\'" "zathura" (file))))
 
@@ -508,6 +528,23 @@ Language server protol setup in Emacs
 (setq lsp-completion-provider :none)
 ;(setq lsp-diagnostics-provider :none)
 #+END_SRC emacs-lisp
+** Corfu
+#+BEGIN_SRC emacs-lisp
+(use-package corfu
+    :after orderless
+    :custom
+    (corfu-quit-at-boundary nil)
+    (corfu-quit-no-match t)
+    (corfu-cycle t)
+    (corfu-auto t)
+    :init
+    (corfu-global-mode))
+
+(defun corfu-lsp-setup ()
+    (setq-local completion-styles '(orderless)
+		completion-category-defaults nil))
+(add-hook 'lsp-mode-hook #'corfu-lsp-setup)
+#+END_SRC
 
 * Org mode
 ** General
